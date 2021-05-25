@@ -1,5 +1,4 @@
 import yaml
-import math
 import sys
 import subprocess
 import time
@@ -8,7 +7,7 @@ from NeSI.data import prometheus as P
 
 def run_cmd(cmd_str):
     print(f"Running command '{cmd_str}'.")
-    time.sleep(3)
+    time.sleep(3) # No crashing slurm sb allowed
     output = subprocess.check_output(cmd_str.split(" ")).decode().strip()
     return output
 
@@ -16,12 +15,8 @@ args = sys.argv
 
 ld=yaml.load(open("lic.yml"), Loader=yaml.FullLoader)
 
-
-#tracked_feature_value["token_name"] + ":" + str(tracked_feature_value["token_soak"]) + ","
-
 update_strings={}
 
-#loop here
 while 1:
     last_update_strings=update_strings.copy()
     update_strings={}
@@ -54,22 +49,25 @@ while 1:
 
     for cluster, string in update_strings.items():
         reservation_name=f"LicenceSoak_{cluster}"
-        print(f"Attempting to update {reservation_name}")
-        if cluster in last_update_strings and string == last_update_strings[cluster]:
-            print(f"...no change needed.")
-            continue
         try:
-            cmd=["scontrol", "update", "-M", cluster, f"ReservationName={reservation_name}","Flags=LICENSE_ONLY",f"licenses={string}"]
-            #print(" ".join(cmd))
-            scntl_out=(subprocess.check_output(cmd).decode().strip())
-            print(f"... updated to '{string}'")
-        except subprocess.CalledProcessError:
-            print(" ".join(cmd))
-            print("Could not update reservation, attempting to create.")
-            cmd=["scontrol", "create", "-M", cluster, f"ReservationName=={reservation_name}","StartTime=now","Duration=infinite","Users=root","Flags=LICENSE_ONLY",f"licenses={string}"]
-            #print(" ".join(cmd))
-            scntl_out=(subprocess.check_output(cmd).decode().strip())
-            print(f"... created new reservation with '{string}'")
+            print(f"Attempting to update {reservation_name}")
+            if cluster in last_update_strings and string == last_update_strings[cluster]:
+                print(f"...no change needed.")
+                continue
+            try:
+                cmd=["scontrol", "update", "-M", cluster, f"ReservationName={reservation_name}","Flags=LICENSE_ONLY",f"licenses={string}"]
+                #print(" ".join(cmd))
+                scntl_out=(subprocess.check_output(cmd).decode().strip())
+                print(f"... updated to '{string}'")
+            except subprocess.CalledProcessError:
+                print(" ".join(cmd))
+                print("Could not update reservation, attempting to create.")
+                cmd=["scontrol", "create", "-M", cluster, f"ReservationName=={reservation_name}","StartTime=now","Duration=infinite","Users=root","Flags=LICENSE_ONLY",f"licenses={string}"]
+                #print(" ".join(cmd))
+                scntl_out=(subprocess.check_output(cmd).decode().strip())
+                print(f"... created new reservation with '{string}'")
+        except Exception as e:
+            print(str(e))
 
 
     time.sleep(60)
