@@ -13,7 +13,7 @@ def run_cmd(cmd_str):
 
 args = sys.argv
 
-ld=yaml.load(open("lic.yml"), Loader=yaml.FullLoader)
+ld=yaml.load(open(args[1]), Loader=yaml.FullLoader)
 
 update_strings={}
 

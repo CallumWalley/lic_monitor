@@ -1,3 +1,8 @@
+"""
+Given the name of a token, creates / validates slurm token.
+usage: `python slurm_token_from_conf.py licences.yml token_1@server token_2@server token_n@server
+"""
+
 import yaml
 import math
 import sys
@@ -36,6 +41,8 @@ with open(args[1]) as licf:
     else:
         raise Exception(f"Could not find '{token_name}' in licence conf.")
 
+
+#P.query(f"sum(flexlm_licenses_free{{feature=\"matlab\", owner=\"gns\"}})")
 # Total lic on server.
 try:
     total_issued = P.query(
@@ -43,6 +50,10 @@ try:
 except Exception as e:
     raise Exception(
         f"Could not get '{token_name}' total from promethius. Check licence file is up to date and server is up.\n {e}")
+if total_issued==0:
+        raise Exception(
+            f"Something seems wrong, '{token_name}' has zero total issued according to promethius.")
+print(f"Total issued {total_issued}")
 
 # Converts sacctgr output into dict.
 clusters = []
@@ -54,7 +65,6 @@ for line in run_cmd("sacctmgr show resource withclusters -np").split("\n"):
 n_clusters = len(conf_server["allowed_clusters"])
 percent_allowed = math.floor(100 / n_clusters)  # Must round down.
 metatotal = max(math.ceil(100*total_issued/(percent_allowed)),1)
-
 
 
 if len(clusters) < n_clusters:
