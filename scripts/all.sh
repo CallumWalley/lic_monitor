@@ -8,4 +8,4 @@ echo "Merging..."
 echo "Checking tokens..."
 ./all_slurm_token_from_conf.sh
 echo "Starting Soak"
-python slurm_token_soak.py
+python ../util/slurm_token_soak.py ../conf/lic.yml
