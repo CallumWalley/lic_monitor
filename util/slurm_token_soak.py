@@ -62,7 +62,7 @@ for cluster, update_string in update_strings.items():
     except subprocess.CalledProcessError:
         print(" ".join(cmd))
         print("Could not update reservation, attempting to create.")
-        cmd=["scontrol", "create", "-M", cluster, f"ReservationName=={reservation_name}","StartTime=now","Duration=infinite","Users=root","Flags=LICENSE_ONLY",f"licenses={update_string}"]
+        cmd=["scontrol", "create", "-M", cluster, f"ReservationName={reservation_name}","StartTime=now","Duration=infinite","Users=root","Flags=LICENSE_ONLY",f"licenses={update_string}"]
         #print(" ".join(cmd))
         scntl_out=(subprocess.check_output(cmd).decode().strip())
         print(f"... created new reservation with '{update_string}'")
